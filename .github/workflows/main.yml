@@ -1,0 +1,14 @@
+name: Windows RDP
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Start Windows
+        run: ./run.sh
+        shell: bash
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+          
