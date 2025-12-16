@@ -18,11 +18,17 @@ jobs:
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
       - name: Create Tunnel
         run: Start-Process .\ngrok\ngrok.exe -ArgumentList "tcp 3389"
-      - name: Get Info & Create User
+      - name: Wait for Tunnel
         run: |
-          Start-Sleep -Seconds 10
-          $json = Invoke-RestMethod -Uri http://localhost:4040/api/tunnels
-          $url = $json.tunnels[0].public_url
+          $url = ""
+          Write-Host "Searching for Ngrok Tunnel..."
+          while ($url -eq "") {
+            Start-Sleep -Seconds 5
+            try {
+              $json = Invoke-RestMethod -Uri http://localhost:4040/api/tunnels
+              $url = $json.tunnels[0].public_url
+            } catch {}
+          }
           Write-Host "=========================================="
           Write-Host "IP Address: $url"
           Write-Host "Username: runneradmin"
@@ -30,6 +36,7 @@ jobs:
           Write-Host "=========================================="
           net user runneradmin Monstar@123 /add
           net localgroup administrators runneradmin /add
-      - name: Loop
+      - name: Keep Alive
         run: |
           while ($true) { Start-Sleep -Seconds 300 }
+          
